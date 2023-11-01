@@ -33,7 +33,7 @@ dependencies:
   path_provider: ^2.1.1
   json_annotation: ^4.8.1
   window_size:
-    path: F:/flutter-libs/flutter-desktop-embedding-main/plugins/window_size
+    path: C:/Users/Ayaya/FlutterPackages/flutter-desktop-embedding-main/plugins/window_size
   mask_text_input_formatter: ^2.5.0
   fl_chart: ^0.64.0
   flutter:

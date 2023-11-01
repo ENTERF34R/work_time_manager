@@ -643,7 +643,7 @@ packages:
   window_size:
     dependency: "direct main"
     description:
-      path: "F:\\flutter-libs\\flutter-desktop-embedding-main\\plugins\\window_size"
+      path: "C:\\Users\\Ayaya\\FlutterPackages\\flutter-desktop-embedding-main\\plugins\\window_size"
       relative: false
     source: path
     version: "0.1.0"

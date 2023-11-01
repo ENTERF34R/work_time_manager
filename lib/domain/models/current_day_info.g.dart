@@ -1,12 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'day_data.dart';
+part of 'current_day_info.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-DayData _$DayDataFromJson(Map<String, dynamic> json) => DayData(
+CurrentDayInfo _$CurrentDayInfoFromJson(Map<String, dynamic> json) =>
+    CurrentDayInfo(
       const TimeOfDayJsonConverter()
           .fromJson(json['arriveTime'] as Map<String, dynamic>),
       const TimeOfDayJsonConverter()
@@ -14,7 +15,8 @@ DayData _$DayDataFromJson(Map<String, dynamic> json) => DayData(
       json['note'] as String,
     );
 
-Map<String, dynamic> _$DayDataToJson(DayData instance) => <String, dynamic>{
+Map<String, dynamic> _$CurrentDayInfoToJson(CurrentDayInfo instance) =>
+    <String, dynamic>{
       'arriveTime': const TimeOfDayJsonConverter().toJson(instance.arriveTime),
       'amountTime': const TimeOfDayJsonConverter().toJson(instance.amountTime),
       'note': instance.note,

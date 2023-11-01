@@ -2,13 +2,13 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:work_time_manager/domain/models/day_data.dart';
 import 'package:work_time_manager/presentation/widgets/day_note.dart';
 import 'package:work_time_manager/presentation/widgets/day_statistics.dart';
 import 'package:work_time_manager/presentation/widgets/item_container.dart';
 import 'package:work_time_manager/presentation/widgets/month_statistics.dart';
 import 'package:work_time_manager/presentation/widgets/time_input.dart';
 
+import '../../domain/models/month_statistics.dart';
 import '../../domain/providers/current_day_provider.dart';
 
 class MainScreen extends StatefulWidget {
@@ -79,24 +79,16 @@ class _MainScreenState extends State<MainScreen> {
                               children: [
                                 TimeInput(
                                     savePressed: (h, m) => () async {
-                                          await saveCurrentDay(
-                                              currentDayProvider,
-                                              DayData.newArriveTime(
-                                                  TimeOfDay(hour: h, minute: m),
-                                                  currentDayProvider
-                                                      .currentDay));
+                                      currentDayProvider.currentDay.arriveTime = TimeOfDay(hour: h, minute: m);
+                                          await saveCurrentDay(currentDayProvider);
                                         }(),
                                     saveNotifier: saveNotifier),
                                 const Padding(
                                     padding: EdgeInsets.only(left: 30)),
                                 DayStatistics(
                                     savePressed: (t) => () async {
-                                          await saveCurrentDay(
-                                              currentDayProvider,
-                                              DayData.newAmountTime(
-                                                  t,
-                                                  currentDayProvider
-                                                      .currentDay));
+                                      currentDayProvider.currentDay.amountTime = t;
+                                      await saveCurrentDay(currentDayProvider);
                                         }(),
                                     saveNotifier: saveNotifier),
                                 const Padding(
@@ -123,17 +115,14 @@ class _MainScreenState extends State<MainScreen> {
                               children: [
                                 DayNote(
                                     savePressed: (s) => () async {
-                                          await saveCurrentDay(
-                                              currentDayProvider,
-                                              DayData.newNote(
-                                                  s,
-                                                  currentDayProvider
-                                                      .currentDay));
+                                      currentDayProvider.currentDay.note = s;
+                                      await saveCurrentDay(currentDayProvider);
                                         }(),
                                     saveNotifier: saveNotifier),
                                 const Padding(
                                     padding: EdgeInsets.only(left: 30)),
-                                const MonthStatistics(),
+                                MonthStatisticsWidget(
+                                    monthStatistics: MonthStatistics([])),
                               ],
                             )
                           ],
@@ -158,9 +147,9 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  Future saveCurrentDay(CurrentDayProvider provider, DayData data) async {
+  Future saveCurrentDay(CurrentDayProvider provider) async {
     saveNotifier.value = true;
-    await provider.updateCurrentDay(data);
+    await provider.save();
     saveNotifier.value = false;
   }
 }

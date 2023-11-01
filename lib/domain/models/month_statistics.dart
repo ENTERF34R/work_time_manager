@@ -1,7 +1,7 @@
 import 'day_data.dart';
 
 class MonthStatistics {
-  final Iterable<DayData> statistics;
+  final List<DayData> statistics;
 
   MonthStatistics(this.statistics);
 }
