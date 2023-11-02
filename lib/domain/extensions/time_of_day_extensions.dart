@@ -24,4 +24,44 @@ extension TimeOfDayExtensions on TimeOfDay {
 
     return TimeOfDay(hour: hour, minute: minute);
   }
+
+  bool operator <(other) {
+    if (other is TimeOfDay) {
+      if (hour == other.hour) {
+        return minute < other.minute;
+      } else {
+        return hour < other.hour;
+      }
+    }
+
+    return false;
+  }
+
+  bool operator >(other) {
+    if (other is TimeOfDay) {
+      if (hour == other.hour) {
+        return minute > other.minute;
+      } else {
+        return hour > other.hour;
+      }
+    }
+
+    return false;
+  }
+
+  bool operator <=(other) {
+    if (other is TimeOfDay) {
+      return this == other || this < other;
+    }
+
+    return false;
+  }
+
+  bool operator >=(other) {
+    if (other is TimeOfDay) {
+      return this == other || this > other;
+    }
+
+    return false;
+  }
 }

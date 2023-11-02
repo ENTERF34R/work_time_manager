@@ -1,15 +1,13 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:work_time_manager/domain/providers/current_day_provider.dart';
 import 'package:work_time_manager/presentation/widgets/day_note.dart';
 import 'package:work_time_manager/presentation/widgets/day_statistics.dart';
 import 'package:work_time_manager/presentation/widgets/item_container.dart';
 import 'package:work_time_manager/presentation/widgets/month_statistics.dart';
 import 'package:work_time_manager/presentation/widgets/time_input.dart';
-
-import '../../domain/models/month_statistics.dart';
-import '../../domain/providers/current_day_provider.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -27,9 +25,6 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    CurrentDayProvider currentDayProvider =
-        Provider.of<CurrentDayProvider>(context);
-
     String tab2Text = "";
     Random rand = Random();
     switch (rand.nextInt(3)) {
@@ -46,7 +41,8 @@ class _MainScreenState extends State<MainScreen> {
     }
 
     return FutureBuilder(future: () async {
-      return await currentDayProvider.initialize();
+      //todo: add logic
+      //return await currentDayProvider.initialize();
     }(), builder: (context, snapshot) {
       if (snapshot.hasError || (snapshot.hasData && snapshot.data == false)) {
         return const Align(
@@ -79,16 +75,18 @@ class _MainScreenState extends State<MainScreen> {
                               children: [
                                 TimeInput(
                                     savePressed: (h, m) => () async {
-                                      currentDayProvider.currentDay.arriveTime = TimeOfDay(hour: h, minute: m);
-                                          await saveCurrentDay(currentDayProvider);
+                                      // todo: add logic
+                                      //currentDayProvider.currentDay.arriveTime = TimeOfDay(hour: h, minute: m);
+                                      //   await saveCurrentDay(currentDayProvider);
                                         }(),
                                     saveNotifier: saveNotifier),
                                 const Padding(
                                     padding: EdgeInsets.only(left: 30)),
                                 DayStatistics(
                                     savePressed: (t) => () async {
-                                      currentDayProvider.currentDay.amountTime = t;
-                                      await saveCurrentDay(currentDayProvider);
+                                      //todo: add logic
+                                      //currentDayProvider.currentDay.amountTime = t;
+                                      //await saveCurrentDay(currentDayProvider);
                                         }(),
                                     saveNotifier: saveNotifier),
                                 const Padding(
@@ -115,14 +113,14 @@ class _MainScreenState extends State<MainScreen> {
                               children: [
                                 DayNote(
                                     savePressed: (s) => () async {
-                                      currentDayProvider.currentDay.note = s;
-                                      await saveCurrentDay(currentDayProvider);
+                                      //todo: add logic
+                                      //currentDayProvider.currentDay.note = s;
+                                      //await saveCurrentDay(currentDayProvider);
                                         }(),
                                     saveNotifier: saveNotifier),
                                 const Padding(
                                     padding: EdgeInsets.only(left: 30)),
-                                MonthStatisticsWidget(
-                                    monthStatistics: MonthStatistics([])),
+                                const MonthStatisticsWidget(),
                               ],
                             )
                           ],
@@ -149,7 +147,7 @@ class _MainScreenState extends State<MainScreen> {
 
   Future saveCurrentDay(CurrentDayProvider provider) async {
     saveNotifier.value = true;
-    await provider.save();
+    await provider.saveCurrentDay();
     saveNotifier.value = false;
   }
 }

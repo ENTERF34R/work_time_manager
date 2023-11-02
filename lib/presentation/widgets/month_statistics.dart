@@ -1,16 +1,15 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:work_time_manager/domain/models/month_statistics.dart';
+import 'package:work_time_manager/domain/providers/month_statistics_provider.dart';
 import 'package:work_time_manager/presentation/widgets/item_container.dart';
 
 class MonthStatisticsController {}
 
 class MonthStatisticsWidget extends StatefulWidget {
-  final MonthStatistics _monthStatistics;
-
   const MonthStatisticsWidget(
-      {super.key, required MonthStatistics monthStatistics})
-      : _monthStatistics = monthStatistics;
+      {super.key});
 
   @override
   State<MonthStatisticsWidget> createState() => _MonthStatisticsWidgetState();
@@ -27,38 +26,46 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
 
   @override
   Widget build(BuildContext context) {
+    MonthStatisticsProvider monthStatisticsProvider = Provider.of<MonthStatisticsProvider>(context);
     Text text = isOst ? ost : per;
 
-    return ItemContainer(
-        child: SizedBox(
-      width: 800,
-      height: 400,
-      child: Container(
-          padding: const EdgeInsets.all(15),
-          child: Column(
-            children: [
-              const Text("Месечная статистика",
-                  style: TextStyle(fontSize: 20, color: Colors.blueAccent)),
-              const Padding(padding: EdgeInsets.only(top: 30)),
-              Align(
-                  alignment: Alignment.topCenter,
-                  child: getHistogram(widget._monthStatistics)),
-              const Padding(padding: EdgeInsets.only(top: 25)),
-              Row(
-                children: [
-                  const Padding(padding: EdgeInsets.only(left: 40)),
-                  text,
-                  const Padding(padding: EdgeInsets.only(left: 25)),
-                  TextButton(
-                      onPressed: () => setState(() {
-                            isOst = !isOst;
-                          }),
-                      child: const Text(""))
-                ],
-              )
-            ],
-          )),
-    ));
+    return FutureBuilder(future: monthStatisticsProvider.getMonth(DateTime.now().year, DateTime.now().month),
+    builder: (ctx, value) {
+      if (!value.hasData) {
+        return const CircularProgressIndicator();
+      }
+
+      return ItemContainer(
+          child: SizedBox(
+            width: 800,
+            height: 400,
+            child: Container(
+                padding: const EdgeInsets.all(15),
+                child: Column(
+                  children: [
+                    const Text("Месечная статистика",
+                        style: TextStyle(fontSize: 20, color: Colors.blueAccent)),
+                    const Padding(padding: EdgeInsets.only(top: 30)),
+                    Align(
+                        alignment: Alignment.topCenter,
+                        child: getHistogram(value.data!)),
+                    const Padding(padding: EdgeInsets.only(top: 25)),
+                    Row(
+                      children: [
+                        const Padding(padding: EdgeInsets.only(left: 40)),
+                        text,
+                        const Padding(padding: EdgeInsets.only(left: 25)),
+                        TextButton(
+                            onPressed: () => setState(() {
+                              isOst = !isOst;
+                            }),
+                            child: const Text(""))
+                      ],
+                    )
+                  ],
+                )),
+          ));
+    });
   }
 
   Widget getHistogram(MonthStatistics monthStatistics) {

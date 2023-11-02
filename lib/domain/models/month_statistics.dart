@@ -1,7 +1,9 @@
-import 'day_data.dart';
+import '../models/day_info.dart';
 
 class MonthStatistics {
-  final List<DayData> statistics;
+  int year;
+  int month;
+  final List<DayInfo> statistics;
 
-  MonthStatistics(this.statistics);
+  MonthStatistics({ required this.year, required this.month, required this.statistics});
 }

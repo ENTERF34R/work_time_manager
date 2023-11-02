@@ -1,23 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:json_annotation/json_annotation.dart';
-import 'package:work_time_manager/domain/converters/time_of_day_json_converter.dart';
+import 'package:work_time_manager/domain/extensions/date_time_extensions.dart';
 import 'package:work_time_manager/domain/extensions/time_of_day_extensions.dart';
+import 'package:work_time_manager/domain/models/day_info.dart';
 
-part 'current_day_info.g.dart';
-
-@JsonSerializable(converters: [ TimeOfDayJsonConverter() ])
 class CurrentDayInfo {
-  TimeOfDay arriveTime;
+  DateTime arriveTime;
   TimeOfDay amountTime;
   String note;
 
-  CurrentDayInfo(this.arriveTime, this.amountTime, this.note);
+  CurrentDayInfo({ required this.arriveTime, required this.amountTime, this.note = "" });
 
-  TimeOfDay get timePassed => TimeOfDay.now().subtract(arriveTime);
+  TimeOfDay get workTime => TimeOfDay.now().subtract(arriveTime.time);
 
-  TimeOfDay get timeLeft => amountTime.subtract(timePassed);
-
-  factory CurrentDayInfo.fromJson(Map<String, dynamic> json) => _$CurrentDayInfoFromJson(json);
-
-  Map<String, dynamic> toJson() => _$CurrentDayInfoToJson(this);
+  DayInfo toDayInfo() => DayInfo(arriveTime, amountTime, workTime, note);
 }
