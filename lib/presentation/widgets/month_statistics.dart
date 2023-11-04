@@ -78,7 +78,11 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
                     const Text("Месечная статистика",
                         style:
                             TextStyle(fontSize: 20, color: Colors.blueAccent)),
-                    const Padding(padding: EdgeInsets.only(top: 30)),
+                    const Padding(padding: EdgeInsets.only(top: 5)),
+                    Text("${rusMonthName(value.data!.month)} ${value.data!.year}",
+                        style:
+                        const TextStyle(fontSize: 20, color: Colors.blueAccent)),
+                    const Padding(padding: EdgeInsets.symmetric(vertical: 5)),
                     Align(
                         alignment: Alignment.topCenter,
                         child: getHistogram(value.data!, groups!)),
@@ -103,9 +107,9 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
 
   Widget getHistogram(MonthStatistics monthStatistics, List<BarChartGroupData> groups) {
 
-    Container res = Container(
+    return SizedBox(
         width: 750,
-        height: 240,
+        height: 225,
         child: Center(
             child: ConstrainedBox(
                 constraints:
@@ -161,7 +165,6 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
                           },
                         )),
                     barGroups: groups)))));
-    return res;
   }
 
   List<BarChartGroupData> getGroups(MonthStatistics month) {
@@ -212,5 +215,36 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
     }
 
     return Text(value.toInt().toString(), style: style);
+  }
+
+  String rusMonthName(int month) {
+    switch(month) {
+      case 1:
+        return "Январь";
+      case 2:
+        return "Февраль";
+      case 3:
+        return "Март";
+      case 4:
+        return "Апрель";
+      case 5:
+        return "Май";
+      case 6:
+        return "Июнь";
+      case 7:
+        return "Июль";
+      case 8:
+        return "Август";
+      case 9:
+        return "Сентябрь";
+      case 10:
+        return "Октябрь";
+      case 11:
+        return "Ноябрь";
+      case 12:
+        return "Декабрь";
+      default:
+        return "";
+    }
   }
 }
