@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:work_time_manager/domain/models/current_day_info.dart';
 import 'package:work_time_manager/presentation/widgets/item_container.dart';
 
 class DayNote extends StatefulWidget {
   final void Function(String) _savePressed;
   final ValueNotifier<bool> _saveNotifier;
+  final CurrentDayInfo _currentDayInfo;
 
-  const DayNote({super.key, required void Function(String) savePressed, required ValueNotifier<bool> saveNotifier})
-      : _savePressed = savePressed, _saveNotifier = saveNotifier;
+  const DayNote({super.key, required void Function(String) savePressed, required ValueNotifier<bool> saveNotifier, required CurrentDayInfo currentDayInfo})
+      : _savePressed = savePressed, _saveNotifier = saveNotifier, _currentDayInfo = currentDayInfo;
 
   @override
   State<DayNote> createState() => _DayNoteState();
@@ -18,6 +20,8 @@ class _DayNoteState extends State<DayNote> {
 
   @override
   Widget build(BuildContext context) {
+    controller.text = widget._currentDayInfo.note;
+
     return ItemContainer(
         child: Container(
             width: 250,
@@ -35,7 +39,6 @@ class _DayNoteState extends State<DayNote> {
                     maxLines: 10,
                       maxLength: 140,
                       maxLengthEnforcement: MaxLengthEnforcement.truncateAfterCompositionEnds,
-                      //maxLength: 75,
                       expands: false,
 
                       decoration: const InputDecoration(

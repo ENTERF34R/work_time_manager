@@ -62,7 +62,7 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
               divText = Text("Недоработка:   ${divTime.hourToString()}:${divTime.minuteToString()}",
                   style: const TextStyle(fontSize: 20, color: Colors.red));
             } else {
-              divText = Text("Переработка:   ${divTime.hourToString()}:${divTime.minuteToString()}",
+              divText = Text("Переработка:  ${divTime.hourToString()}:${divTime.minuteToString()}",
                   style: const TextStyle(fontSize: 20, color: Colors.green));
             }
           }
@@ -167,8 +167,6 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
   List<BarChartGroupData> getGroups(MonthStatistics month) {
     List<BarChartGroupData> result = [];
     int days = daysInMonth(month.year, month.month);
-
-    DateTime d = DateTime.now();
 
     for (int currentDay = 1; currentDay <= days; currentDay++) {
       DayInfo? day = month.statistics

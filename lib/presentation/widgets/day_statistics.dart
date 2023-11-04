@@ -40,7 +40,7 @@ class _DayStatisticsState extends State<DayStatistics> {
     double workLineLen, leftLineLen, overLineLen;
     TimeOfDay div = widget._currentDayInfo.amountTime.subtract(widget._currentDayInfo.workTime);
     if (div < const TimeOfDay(hour: 0, minute: 0)) {
-      divText = Text("Переработка:    ${div.hourToString()}:${div.minuteToString()}",
+      divText = Text("Переработка:      ${div.hourToString()}:${div.minuteToString()}",
           style: const TextStyle(fontSize: 20, color: Colors.green));
     } else {
       divText = Text("Осталось:            ${div.hourToString()}:${div.minuteToString()}",

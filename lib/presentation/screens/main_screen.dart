@@ -10,6 +10,7 @@ import 'package:work_time_manager/presentation/widgets/day_note.dart';
 import 'package:work_time_manager/presentation/widgets/day_statistics.dart';
 import 'package:work_time_manager/presentation/widgets/item_container.dart';
 import 'package:work_time_manager/presentation/widgets/month_statistics.dart';
+import 'package:work_time_manager/presentation/widgets/note_widget.dart';
 import 'package:work_time_manager/presentation/widgets/time_input.dart';
 
 class MainScreen extends StatefulWidget {
@@ -62,7 +63,7 @@ class _MainScreenState extends State<MainScreen> {
           } else if (snapshot.hasData) {
             currentDay = snapshot.data!;
             return DefaultTabController(
-                length: 2,
+                length: 3,
                 child: Scaffold(
                   appBar: AppBar(
                     toolbarHeight: 0,
@@ -70,6 +71,7 @@ class _MainScreenState extends State<MainScreen> {
                       Tab(
                           icon: Icon(Icons.access_alarm, color: Colors.blue),
                           height: 40),
+                      Tab(icon: Icon(Icons.edit_note_outlined, color: Colors.blue)),
                       Tab(icon: Icon(Icons.settings, color: Colors.blue))
                     ]),
                   ),
@@ -110,7 +112,7 @@ class _MainScreenState extends State<MainScreen> {
                                       height: 200,
                                       child: ItemContainer(
                                           child: Container(
-                                              padding: EdgeInsets.all(15),
+                                              padding: const EdgeInsets.all(15),
                                               child: FittedBox(
                                                   fit: BoxFit.fill,
                                                   child: IconButton(
@@ -132,7 +134,8 @@ class _MainScreenState extends State<MainScreen> {
                                               await saveCurrentDay(
                                                   currentDayProvider);
                                             }(),
-                                        saveNotifier: saveNotifier),
+                                        saveNotifier: saveNotifier,
+                                    currentDayInfo: currentDay!),
                                     const Padding(
                                         padding: EdgeInsets.only(left: 30)),
                                     const MonthStatisticsWidget(),
@@ -141,6 +144,35 @@ class _MainScreenState extends State<MainScreen> {
                               ],
                             ),
                           )),
+                      Align(
+                        alignment: Alignment.center,
+                        child: Container(
+                          width: 1075,
+                          height: 650,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Padding(padding: EdgeInsets.symmetric(vertical: 7.5)),
+                              const Text("Все заметки", style: TextStyle(fontSize: 24)),
+                              const Padding(padding: EdgeInsets.symmetric(vertical: 7.5)),
+                              Container(
+                                width: 1025,
+                                height: 550,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.black,
+                                  )
+                                ),
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    children: getNoteWidgets(975),
+                                  ),
+                                ),
+                              )
+                            ],
+                          )
+                        ),
+                      ),
                       Align(
                         alignment: Alignment.center,
                         child: Text(tab2Text),
@@ -165,5 +197,46 @@ class _MainScreenState extends State<MainScreen> {
     saveNotifier.value = true;
     provider.saveCurrentDay();
     saveNotifier.value = false;
+  }
+  
+  List<Widget> getNoteWidgets(double width) {
+    String longNote = "";
+    for (int i = 0; i < 140; i++ ){
+      longNote += "O";
+    }
+
+    return <Widget> [
+      const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+      NoteWidget(date: DateTime(2023, 11, 1), note: "First november", width: width),
+      const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+      NoteWidget(date: DateTime(2023, 11, 2), note: "Second november", width: width),
+      const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+      NoteWidget(date: DateTime(2023, 11, 3), note: "Third november", width: width),
+      const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+      NoteWidget(date: DateTime(2023, 11, 3), note: "Third november", width: width),
+      const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+      NoteWidget(date: DateTime(2023, 11, 3), note: "Third november", width: width),
+      const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+      NoteWidget(date: DateTime(2023, 11, 3), note: "Third november", width: width),
+      const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+      NoteWidget(date: DateTime(2023, 11, 3), note: "Third november", width: width),
+      const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+      NoteWidget(date: DateTime(2023, 11, 3), note: "Third november", width: width),
+      const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+      NoteWidget(date: DateTime(2023, 11, 3), note: "Third november", width: width),
+      const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+      NoteWidget(date: DateTime(2023, 11, 3), note: "Third november", width: width),
+      const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+      NoteWidget(date: DateTime(2023, 11, 3), note: "Third november", width: width),
+      const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+      NoteWidget(date: DateTime(2023, 11, 3), note: "Third november", width: width),
+      const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+      NoteWidget(date: DateTime(2023, 11, 3), note: "Third november", width: width),
+      const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+      NoteWidget(date: DateTime(2023, 11, 3), note: "Third november", width: width),
+      const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+      NoteWidget(date: DateTime(2023, 11, 3), note: longNote, width: width),
+      const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+    ];
   }
 }
