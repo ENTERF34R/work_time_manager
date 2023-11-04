@@ -1,18 +1,19 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:work_time_manager/domain/extensions/double_extensions.dart';
 import 'package:work_time_manager/domain/models/month_statistics.dart';
 import 'package:work_time_manager/domain/providers/month_statistics_provider.dart';
 import 'package:work_time_manager/presentation/widgets/item_container.dart';
 import 'package:quiver/time.dart';
 import 'package:work_time_manager/domain/extensions/time_of_day_extensions.dart';
 
+import '../../domain/models/day_info.dart';
+
 class MonthStatisticsController {}
 
 class MonthStatisticsWidget extends StatefulWidget {
-  const MonthStatisticsWidget(
-      {super.key});
+  const MonthStatisticsWidget({super.key});
 
   @override
   State<MonthStatisticsWidget> createState() => _MonthStatisticsWidgetState();
@@ -26,30 +27,48 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
       style: TextStyle(fontSize: 20, color: Colors.green));
   bool isOst = true;
   MonthStatistics? currentMonth;
+  Text? divText;
+  List<BarChartGroupData>? groups;
+  String workTimeLabel = "";
 
   @override
   Widget build(BuildContext context) {
-    MonthStatisticsProvider monthStatisticsProvider = Provider.of<MonthStatisticsProvider>(context);
-    Text text = isOst ? ost : per;
+    MonthStatisticsProvider monthStatisticsProvider =
+        Provider.of<MonthStatisticsProvider>(context);
 
-    return FutureBuilder(future: () async {
-      if (currentMonth == null) {
-        return await monthStatisticsProvider.getMonth(DateTime.now().year, DateTime.now().month);
-      } else {
-        return currentMonth;
-      }
-    }.call(),
-    builder: (ctx, value) {
-      if (value.hasError) {
-        return Text("Error occurred! (${value.error!.toString()})");
-      }
+    return FutureBuilder(
+        future: () async {
+          if (currentMonth == null) {
+            return await monthStatisticsProvider.getMonth(
+                DateTime.now().year, DateTime.now().month);
+          } else {
+            return currentMonth;
+          }
+        }.call(),
+        builder: (ctx, value) {
+          if (value.hasError) {
+            return Text("Error occurred! (${value.error!.toString()})");
+          }
 
-      if (!value.hasData) {
-        return const CircularProgressIndicator();
-      }
+          if (!value.hasData) {
+            return const CircularProgressIndicator();
+          }
 
-      return ItemContainer(
-          child: SizedBox(
+          groups ??= getGroups(value.data!);
+
+          if (divText == null) {
+            TimeOfDay divTime = MonthStatistics.getDiv(value.data!);
+            if (divTime < const TimeOfDay(hour: 0, minute: 0)) {
+              divText = Text("Недоработка:   ${divTime.hourToString()}:${divTime.minuteToString()}",
+                  style: const TextStyle(fontSize: 20, color: Colors.red));
+            } else {
+              divText = Text("Переработка:   ${divTime.hourToString()}:${divTime.minuteToString()}",
+                  style: const TextStyle(fontSize: 20, color: Colors.green));
+            }
+          }
+
+          return ItemContainer(
+              child: SizedBox(
             width: 800,
             height: 400,
             child: Container(
@@ -57,113 +76,143 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
                 child: Column(
                   children: [
                     const Text("Месечная статистика",
-                        style: TextStyle(fontSize: 20, color: Colors.blueAccent)),
+                        style:
+                            TextStyle(fontSize: 20, color: Colors.blueAccent)),
                     const Padding(padding: EdgeInsets.only(top: 30)),
                     Align(
                         alignment: Alignment.topCenter,
-                        child: getHistogram(value.data!)),
+                        child: getHistogram(value.data!, groups!)),
                     const Padding(padding: EdgeInsets.only(top: 25)),
                     Row(
                       children: [
                         const Padding(padding: EdgeInsets.only(left: 40)),
-                        text,
+                        divText!,
                         const Padding(padding: EdgeInsets.only(left: 25)),
                         TextButton(
                             onPressed: () => setState(() {
-                              isOst = !isOst;
-                            }),
+                                  isOst = !isOst;
+                                }),
                             child: const Text(""))
                       ],
                     )
                   ],
                 )),
           ));
-    });
+        });
   }
 
-  Widget getHistogram(MonthStatistics monthStatistics) {
-    TimeOfDay value;
+  Widget getHistogram(MonthStatistics monthStatistics, List<BarChartGroupData> groups) {
 
-      return Container(
-          width: 700,
-          height: 250,
-          child: Center(
-              child: ConstrainedBox(
-                  constraints:
-                  const BoxConstraints.tightFor(width: 750, height: 300),
-                  child: BarChart(BarChartData(
-                      maxY: 10,
-                      groupsSpace: 5,
-                      barTouchData: BarTouchData(
+    Container res = Container(
+        width: 750,
+        height: 240,
+        child: Center(
+            child: ConstrainedBox(
+                constraints:
+                    const BoxConstraints.tightFor(width: 750, height: 300),
+                child: BarChart(BarChartData(
+                    maxY: 12,
+                    groupsSpace: 5,
+                    titlesData: FlTitlesData(bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) => bottomTitles(monthStatistics, value, meta),
+                      )
+                    ), rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false))),
+                    barTouchData: BarTouchData(
                         touchCallback: (event, response) {
-                          if (response != null && response.spot != null && event is FlPointerHoverEvent) {
-                            setState(() {
-                              final group = response.spot!.touchedBarGroup;
-                              final rod = group.barRods[0];
-                              if (rod.rodStackItems[0].toY.toInt() < 8) {
-                                color = Colors.red.shade200;
-                              } else {
-                                if (rod.rodStackItems.length == 1) {
-                                  color = Colors.blue.shade200;
-                                } else {
-                                  color = Colors.green.shade200;
-                                }
-                              }
+                          if (response != null &&
+                              response.spot != null &&
+                              event is FlPointerHoverEvent) {
+                            final group = response.spot!.touchedBarGroup;
+                            final day = group.x;
+                            final dayData = monthStatistics.statistics
+                                .where(
+                                    (element) => element.arriveTime.day == day)
+                                .firstOrNull;
+                            if (dayData == null) {
+                              monthStatistics.statistics.forEach((element) {
+                                print("\t${element.arriveTime.day}");
+                              });
+                              return;
+                            }
 
-                              if (rod.rodStackItems[0].toY.toInt() == 8) {
-                                if (rod.rodStackItems.length == 1) {
-                                  value = TimeOfDay(hour: 8, minute: minute);
-                                } else {
-                                  value = rod.rodStackItems[1].toY.toTimeOfDay();
-                                }
+                            setState(() {
+                                workTimeLabel =
+                                  "${dayData.workTime.hourToString()}:${dayData.workTime.minuteToString()}";
+
+                              if (dayData.workTime < dayData.amountTime) {
+                                color = Colors.red.shade200;
+                              } else if (dayData.workTime >
+                                  dayData.amountTime) {
+                                color = Colors.green.shade200;
                               } else {
-                                value = rod.rodStackItems[0].toY.toTimeOfDay();
+                                color = Colors.blue.shade200;
                               }
                             });
                           }
                         },
-                          touchTooltipData: BarTouchTooltipData(
-                            tooltipBgColor: color,
-                            getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                              return BarTooltipItem(
-                                  value.toString(),
-                                  const TextStyle(fontSize: 18));
-                            },
-                          )
-                      ),
-                      barGroups: getGroups(monthStatistics))))));
+                        touchTooltipData: BarTouchTooltipData(
+                          tooltipBgColor: color,
+                          getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                            return BarTooltipItem(
+                                workTimeLabel, const TextStyle(fontSize: 18));
+                          },
+                        )),
+                    barGroups: groups)))));
+    return res;
   }
 
   List<BarChartGroupData> getGroups(MonthStatistics month) {
     List<BarChartGroupData> result = [];
     int days = daysInMonth(month.year, month.month);
-    int currentDay = 1;
 
-    for (var day in month.statistics) {
-      List<BarChartRodStackItem> items = [];
-      if (day.workTime < day.amountTime) {
-        items.add(BarChartRodStackItem(0, day.workTime.toDouble(), Colors.blue));
-        items.add(BarChartRodStackItem(day.workTime.toDouble(), day.amountTime.toDouble(), Colors.red.shade200));
-      } else if (day.workTime > day.amountTime) {
-        items.add(BarChartRodStackItem(0, day.amountTime.toDouble(), Colors.blue));
-        items.add(BarChartRodStackItem(day.amountTime.toDouble(), day.workTime.toDouble(), Colors.green.shade200));
+    DateTime d = DateTime.now();
+
+    for (int currentDay = 1; currentDay <= days; currentDay++) {
+      DayInfo? day = month.statistics
+          .where((d) => d.arriveTime.day == currentDay)
+          .firstOrNull;
+      if (day != null) {
+        List<BarChartRodStackItem> items = [];
+        if (day.workTime < day.amountTime) {
+          items.add(
+              BarChartRodStackItem(0, day.workTime.toDouble(), Colors.blue));
+          items.add(BarChartRodStackItem(day.workTime.toDouble(),
+              day.amountTime.toDouble(), Colors.red.shade200));
+        } else if (day.workTime > day.amountTime) {
+          items.add(
+              BarChartRodStackItem(0, day.amountTime.toDouble(), Colors.blue));
+          items.add(BarChartRodStackItem(day.amountTime.toDouble(),
+              day.workTime.toDouble(), Colors.green.shade200));
+        } else {
+          items.add(
+              BarChartRodStackItem(0, day.workTime.toDouble(), Colors.blue));
+        }
+
+        result.add(BarChartGroupData(x: currentDay,
+            barRods: [
+          BarChartRodData(
+              toY: 10, color: Colors.transparent, rodStackItems: items)
+        ]));
       } else {
-        items.add(BarChartRodStackItem(0, day.workTime.toDouble(), Colors.blue));
+        result.add(BarChartGroupData(x: currentDay));
       }
-
-      result.add(
-        BarChartGroupData(x: currentDay, barRods: [
-          BarChartRodData(toY: 10, color: Colors.transparent, rodStackItems: items)
-        ])
-      );
-
-      currentDay++;
-    }
-
-    for (int i = currentDay; i <= days; i++) {
-      result.add(BarChartGroupData(x: i));
     }
 
     return result;
+  }
+
+  Widget bottomTitles(MonthStatistics monthStatistics, double value, TitleMeta meta) {
+    DateTime day = DateTime(monthStatistics.year, monthStatistics.month, value.toInt());
+    String dayOfTheWeek = DateFormat('EEEE').format(day);
+    TextStyle style = const TextStyle(fontSize: 12);
+
+    if (dayOfTheWeek == "Saturday" || dayOfTheWeek == "Sunday") {
+      style = const TextStyle(color: Colors.red, fontSize: 12);
+    }
+
+    return Text(value.toInt().toString(), style: style);
   }
 }

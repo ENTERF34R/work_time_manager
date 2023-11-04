@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:work_time_manager/data_access/day_info_service.dart';
@@ -27,8 +29,13 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    window_size.setWindowMaxSize(const Size(1130, 730));
-    window_size.setWindowMinSize(const Size(1130, 730));
+    if (Platform.isWindows) {
+      window_size.setWindowMaxSize(const Size(1146, 768));
+      window_size.setWindowMinSize(const Size(1146, 768));
+    } else if (Platform.isLinux) {
+      window_size.setWindowMaxSize(const Size(1130, 730));
+      window_size.setWindowMinSize(const Size(1130, 730));
+    }
 
     return MaterialApp(
       theme: ThemeData(

@@ -17,8 +17,7 @@ class MonthInfoService implements IMonthInfoService {
       if (await file.exists()) {
         String raw = await file.readAsString();
         Map<String, dynamic> json = jsonDecode(raw);
-        MonthStatistics monthStatistics = MonthStatistics.fromJson(json);
-        return monthStatistics;
+        return MonthStatistics.fromJson(json);
       }
     } catch (_) {
       return null;

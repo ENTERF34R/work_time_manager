@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 extension TimeOfDayExtensions on TimeOfDay {
+  /*
   TimeOfDay add(TimeOfDay time) {
     int hour = this.hour + time.hour;
     int minute = this.minute + time.minute;
@@ -12,21 +13,53 @@ extension TimeOfDayExtensions on TimeOfDay {
 
     return TimeOfDay(hour: hour, minute: minute);
   }
+   */
 
-  TimeOfDay subtract(TimeOfDay time) {
+  TimeOfDay add(TimeOfDay other) {
     int hour, minute;
 
-    if (this > time) {
-      hour = this.hour - time.hour;
-      minute = this.minute - time.minute;
+    bool isThisNeg = (this.hour < 0 || this.minute < 0);
+    int thisTime = this.hour.abs() * 60 + this.minute.abs();
+    if (isThisNeg) {
+      thisTime *= -1;
+    }
+
+    bool isOtherNeg = (other.hour < 0 || other.minute < 0);
+    int otherTime = other.hour.abs() * 60 + other.minute.abs();
+    if (isOtherNeg) {
+      otherTime *= -1;
+    }
+
+    int allTime = thisTime + otherTime;
+    if (allTime.abs() < 60) {
+      return TimeOfDay(hour: 0, minute: allTime);
+    } else {
+      bool isAllNeg = allTime < 0;
+      hour = (allTime.abs() / 60).floor();
+      minute = allTime.abs() % 60;
+
+      if (isAllNeg) {
+        hour *= -1;
+      }
+
+      return TimeOfDay(hour: hour, minute: minute);
+    }
+  }
+
+  TimeOfDay subtract(TimeOfDay other) {
+    int hour, minute;
+
+    if (this > other) {
+      hour = this.hour - other.hour;
+      minute = this.minute - other.minute;
 
       if (minute < 0) {
         hour--;
         minute += 60;
       }
-    } else if (this < time) {
-      hour = time.hour - this.hour;
-      minute = time.minute - this.minute;
+    } else if (this < other) {
+      hour = other.hour - this.hour;
+      minute = other.minute - this.minute;
 
       if (minute < 0) {
         hour--;

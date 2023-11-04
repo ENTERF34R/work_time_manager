@@ -26,7 +26,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
 
   FlutterWindow window(project);
   Win32Window::Point origin(10, 10);
-  Win32Window::Size size(1146, 767);
+  Win32Window::Size size(1146, 768);
   if (!window.Create(L"work_time_manager", origin, size)) {
     return EXIT_FAILURE;
   }

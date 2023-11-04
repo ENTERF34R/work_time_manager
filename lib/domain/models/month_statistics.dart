@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:work_time_manager/domain/extensions/time_of_day_extensions.dart';
 import '../models/day_info.dart';
 
 part 'month_statistics.g.dart';
@@ -10,6 +12,17 @@ class MonthStatistics {
   final List<DayInfo> statistics;
 
   MonthStatistics({ required this.year, required this.month, required this.statistics});
+
+  static TimeOfDay getDiv(MonthStatistics monthStatistics) {
+    TimeOfDay result = const TimeOfDay(hour: 0, minute: 0);
+
+    for (var day in monthStatistics.statistics) {
+      TimeOfDay div = day.workTime.subtract(day.amountTime);
+      result = result.add(div);
+    }
+
+    return result;
+  }
 
   factory MonthStatistics.fromJson(Map<String, dynamic> json) => _$MonthStatisticsFromJson(json);
 

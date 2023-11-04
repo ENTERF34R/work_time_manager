@@ -52,12 +52,10 @@ class _DayStatisticsState extends State<DayStatistics> {
       leftLineLen = 0;
       overLineLen = 0;
     } else if (div > const TimeOfDay(hour: 0, minute: 0)) {
-      print("${div.toString()} > ${const TimeOfDay(hour: 0, minute: 0)}");
       workLineLen = allWorkLen * (widget._currentDayInfo.workTime / widget._currentDayInfo.amountTime);
       leftLineLen = allWorkLen - workLineLen;
       overLineLen = 0;
     } else {
-      print("${div.toString()} < ${const TimeOfDay(hour: 0, minute: 0)}");
       workLineLen = allWorkLen;
       overLineLen = ((widget._currentDayInfo.workTime / widget._currentDayInfo.amountTime) - 1) * allWorkLen;
       if (workLineLen + overLineLen > DayStatistics._barMaxLength) {

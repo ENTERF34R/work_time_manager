@@ -12,7 +12,7 @@ class TimeInterval {
 
   TimeInterval(this.start, this.end) {
     TimeOfDay diff = end.subtract(start);
-    if (diff.hour < 0 || (diff.hour == 0 && diff.minute == 0)) {
+    if (diff.hour < 0) {
       throw Exception("End can't be before start");
     }
   }

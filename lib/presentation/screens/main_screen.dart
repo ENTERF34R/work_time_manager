@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:synchronized/synchronized.dart';
 import 'package:work_time_manager/domain/extensions/date_time_extensions.dart';
 import 'package:work_time_manager/domain/models/current_day_info.dart';
 import 'package:work_time_manager/domain/providers/current_day_provider.dart';
@@ -21,7 +20,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  late final CurrentDayInfo currentDay;
+  CurrentDayInfo? currentDay;
   ValueNotifier<bool> saveNotifier = ValueNotifier(false);
   TextEditingController controller = TextEditingController();
   String txtElapsed = "";
@@ -86,24 +85,24 @@ class _MainScreenState extends State<MainScreen> {
                                   children: [
                                     TimeInput(
                                         savePressed: (h, m) => () async {
-                                              currentDay.arriveTime =
+                                              currentDay!.arriveTime =
                                                   DateTime.now().newTime(
                                                       hour: h, minute: m);
                                               await saveCurrentDay(
                                                   currentDayProvider);
                                             }(),
                                         saveNotifier: saveNotifier,
-                                        currentDay: currentDay),
+                                        currentDay: currentDay!),
                                     const Padding(
                                         padding: EdgeInsets.only(left: 30)),
                                     DayStatistics(
                                         savePressed: (t) => () async {
-                                              currentDay.amountTime = t;
+                                              currentDay!.amountTime = t;
                                               await saveCurrentDay(
                                                   currentDayProvider);
                                             }(),
                                         saveNotifier: saveNotifier,
-                                        currentDayInfo: currentDay),
+                                        currentDayInfo: currentDay!),
                                     const Padding(
                                         padding: EdgeInsets.only(left: 30)),
                                     SizedBox(
@@ -129,7 +128,7 @@ class _MainScreenState extends State<MainScreen> {
                                   children: [
                                     DayNote(
                                         savePressed: (s) => () async {
-                                              currentDay.note = s;
+                                              currentDay!.note = s;
                                               await saveCurrentDay(
                                                   currentDayProvider);
                                             }(),
