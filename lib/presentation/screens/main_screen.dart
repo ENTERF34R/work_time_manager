@@ -2,6 +2,10 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:synchronized/synchronized.dart';
+import 'package:work_time_manager/domain/extensions/date_time_extensions.dart';
+import 'package:work_time_manager/domain/models/current_day_info.dart';
 import 'package:work_time_manager/domain/providers/current_day_provider.dart';
 import 'package:work_time_manager/presentation/widgets/day_note.dart';
 import 'package:work_time_manager/presentation/widgets/day_statistics.dart';
@@ -17,6 +21,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  late final CurrentDayInfo currentDay;
   ValueNotifier<bool> saveNotifier = ValueNotifier(false);
   TextEditingController controller = TextEditingController();
   String txtElapsed = "";
@@ -25,6 +30,9 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    CurrentDayProvider currentDayProvider =
+        Provider.of<CurrentDayProvider>(context, listen: false);
+
     String tab2Text = "";
     Random rand = Random();
     switch (rand.nextInt(3)) {
@@ -40,114 +48,123 @@ class _MainScreenState extends State<MainScreen> {
         break;
     }
 
-    return FutureBuilder(future: () async {
-      //todo: add logic
-      //return await currentDayProvider.initialize();
-    }(), builder: (context, snapshot) {
-      if (snapshot.hasError || (snapshot.hasData && snapshot.data == false)) {
-        return const Align(
-          alignment: Alignment.center,
-          child: Text("Some error occurred",
-              style: TextStyle(fontSize: 30, color: Colors.red)),
-        );
-      } else if (snapshot.hasData && snapshot.data == true) {
-        return DefaultTabController(
-            length: 2,
-            child: Scaffold(
-              appBar: AppBar(
-                toolbarHeight: 0,
-                bottom: const TabBar(tabs: [
-                  Tab(
-                      icon: Icon(Icons.access_alarm, color: Colors.blue),
-                      height: 40),
-                  Tab(icon: Icon(Icons.settings, color: Colors.blue))
-                ]),
-              ),
-              body: TabBarView(
-                children: [
-                  Scaffold(
-                      backgroundColor: Colors.blueGrey.shade400,
-                      body: Container(
-                        padding: const EdgeInsets.all(25),
-                        child: Column(
-                          children: [
-                            Row(
+    return FutureBuilder(
+        future: () async {
+          currentDayProvider.init();
+          return currentDayProvider.getCurrentDay();
+        }(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Align(
+              alignment: Alignment.center,
+              child: Text("Some error occurred (${snapshot.error!.toString()})",
+                  style: const TextStyle(fontSize: 30, color: Colors.red)),
+            );
+          } else if (snapshot.hasData) {
+            currentDay = snapshot.data!;
+            return DefaultTabController(
+                length: 2,
+                child: Scaffold(
+                  appBar: AppBar(
+                    toolbarHeight: 0,
+                    bottom: const TabBar(tabs: [
+                      Tab(
+                          icon: Icon(Icons.access_alarm, color: Colors.blue),
+                          height: 40),
+                      Tab(icon: Icon(Icons.settings, color: Colors.blue))
+                    ]),
+                  ),
+                  body: TabBarView(
+                    children: [
+                      Scaffold(
+                          backgroundColor: Colors.blueGrey.shade400,
+                          body: Container(
+                            padding: const EdgeInsets.all(25),
+                            child: Column(
                               children: [
-                                TimeInput(
-                                    savePressed: (h, m) => () async {
-                                      // todo: add logic
-                                      //currentDayProvider.currentDay.arriveTime = TimeOfDay(hour: h, minute: m);
-                                      //   await saveCurrentDay(currentDayProvider);
-                                        }(),
-                                    saveNotifier: saveNotifier),
+                                Row(
+                                  children: [
+                                    TimeInput(
+                                        savePressed: (h, m) => () async {
+                                              currentDay.arriveTime =
+                                                  DateTime.now().newTime(
+                                                      hour: h, minute: m);
+                                              await saveCurrentDay(
+                                                  currentDayProvider);
+                                            }(),
+                                        saveNotifier: saveNotifier,
+                                        currentDay: currentDay),
+                                    const Padding(
+                                        padding: EdgeInsets.only(left: 30)),
+                                    DayStatistics(
+                                        savePressed: (t) => () async {
+                                              currentDay.amountTime = t;
+                                              await saveCurrentDay(
+                                                  currentDayProvider);
+                                            }(),
+                                        saveNotifier: saveNotifier,
+                                        currentDayInfo: currentDay),
+                                    const Padding(
+                                        padding: EdgeInsets.only(left: 30)),
+                                    SizedBox(
+                                      width: 370,
+                                      height: 200,
+                                      child: ItemContainer(
+                                          child: Container(
+                                              padding: EdgeInsets.all(15),
+                                              child: FittedBox(
+                                                  fit: BoxFit.fill,
+                                                  child: IconButton(
+                                                      onPressed: () => print(
+                                                          MediaQuery.of(context)
+                                                              .size),
+                                                      icon: Image.file(File(
+                                                          "C:/Users/Ayaya/Downloads/naruto.jpg")))))),
+                                    )
+                                  ],
+                                ),
                                 const Padding(
-                                    padding: EdgeInsets.only(left: 30)),
-                                DayStatistics(
-                                    savePressed: (t) => () async {
-                                      //todo: add logic
-                                      //currentDayProvider.currentDay.amountTime = t;
-                                      //await saveCurrentDay(currentDayProvider);
-                                        }(),
-                                    saveNotifier: saveNotifier),
-                                const Padding(
-                                    padding: EdgeInsets.only(left: 30)),
-                                SizedBox(
-                                  width: 370,
-                                  height: 200,
-                                  child: ItemContainer(
-                                      child: Container(
-                                          padding: EdgeInsets.all(15),
-                                          child: FittedBox(
-                                              fit: BoxFit.fill,
-                                              child: IconButton(
-                                                  onPressed: () => print(
-                                                      MediaQuery.of(context)
-                                                          .size),
-                                                  icon: Image.file(File(
-                                                      "C:/Users/Ayaya/Downloads/naruto.jpg")))))),
+                                    padding: EdgeInsets.only(top: 30)),
+                                Row(
+                                  children: [
+                                    DayNote(
+                                        savePressed: (s) => () async {
+                                              currentDay.note = s;
+                                              await saveCurrentDay(
+                                                  currentDayProvider);
+                                            }(),
+                                        saveNotifier: saveNotifier),
+                                    const Padding(
+                                        padding: EdgeInsets.only(left: 30)),
+                                    const MonthStatisticsWidget(),
+                                  ],
                                 )
                               ],
                             ),
-                            const Padding(padding: EdgeInsets.only(top: 30)),
-                            Row(
-                              children: [
-                                DayNote(
-                                    savePressed: (s) => () async {
-                                      //todo: add logic
-                                      //currentDayProvider.currentDay.note = s;
-                                      //await saveCurrentDay(currentDayProvider);
-                                        }(),
-                                    saveNotifier: saveNotifier),
-                                const Padding(
-                                    padding: EdgeInsets.only(left: 30)),
-                                const MonthStatisticsWidget(),
-                              ],
-                            )
-                          ],
-                        ),
-                      )),
-                  Align(
-                    alignment: Alignment.center,
-                    child: Text(tab2Text),
-                  )
-                ],
-              ),
-            ));
-      }
+                          )),
+                      Align(
+                        alignment: Alignment.center,
+                        child: Text(tab2Text),
+                      )
+                    ],
+                  ),
+                ));
+          }
 
-      return Container(
-        width: double.infinity,
-        height: double.infinity,
-        color: Colors.white,
-        child: const Align(
-            alignment: Alignment.center, child: CircularProgressIndicator()),
-      );
-    });
+          return Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: Colors.white,
+            child: const Align(
+                alignment: Alignment.center,
+                child: CircularProgressIndicator()),
+          );
+        });
   }
 
   Future saveCurrentDay(CurrentDayProvider provider) async {
     saveNotifier.value = true;
-    await provider.saveCurrentDay();
+    provider.saveCurrentDay();
     saveNotifier.value = false;
   }
 }

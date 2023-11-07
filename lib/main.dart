@@ -7,17 +7,18 @@ import 'package:work_time_manager/domain/dependencies/i_month_info_service.dart'
 import 'package:work_time_manager/domain/providers/current_day_provider.dart';
 import 'package:work_time_manager/domain/providers/month_statistics_provider.dart';
 import 'package:work_time_manager/presentation/screens/main_screen.dart';
+import 'package:window_size/window_size.dart' as window_size;
 
 void main() {
   IDayInfoService dayInfoService = DayInfoService();
   IMonthInfoService monthInfoService = MonthInfoService();
 
   var provider = MultiProvider(providers: [
-    Provider(create: (ctx) => CurrentDayProvider(dayInfoService, monthInfoService, const TimeOfDay(hour: 8, minute: 45))),
+    ChangeNotifierProvider(create: (ctx) => CurrentDayProvider(dayInfoService, monthInfoService, const TimeOfDay(hour: 8, minute: 45))),
     Provider(create: (ctx) => MonthStatisticsProvider(monthInfoService))
   ], child: const MyApp());
 
-  runApp(const MyApp());
+  runApp(provider);
 }
 
 class MyApp extends StatelessWidget {
@@ -26,8 +27,8 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    //window_size.setWindowMaxSize(const Size(1146, 767));
-    //window_size.setWindowMinSize(const Size(1146, 767));
+    window_size.setWindowMaxSize(const Size(1130, 730));
+    window_size.setWindowMinSize(const Size(1130, 730));
 
     return MaterialApp(
       theme: ThemeData(

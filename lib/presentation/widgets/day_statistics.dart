@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:work_time_manager/domain/extensions/time_of_day_extensions.dart';
+import 'package:work_time_manager/domain/models/current_day_info.dart';
+import 'package:work_time_manager/domain/providers/current_day_provider.dart';
 import 'package:work_time_manager/presentation/widgets/horizontal_bar.dart';
 import 'package:work_time_manager/presentation/widgets/item_container.dart';
 
 class DayStatistics extends StatefulWidget {
+  static const _barMaxLength = 340;
+  static const _barMinuteLength = 270 / (8 * 60 + 45);
   final void Function(TimeOfDay) _savePressed;
   final ValueNotifier<bool> _saveNotifier;
+  final CurrentDayInfo _currentDayInfo;
 
   const DayStatistics(
-      {super.key, required void Function(TimeOfDay) savePressed, required ValueNotifier<bool> saveNotifier})
-      : _savePressed = savePressed, _saveNotifier = saveNotifier;
+      {super.key, required void Function(TimeOfDay) savePressed, required ValueNotifier<bool> saveNotifier, required CurrentDayInfo currentDayInfo})
+      : _savePressed = savePressed, _saveNotifier = saveNotifier, _currentDayInfo = currentDayInfo;
 
   @override
   State<DayStatistics> createState() => _DayStatisticsState();
@@ -18,23 +25,53 @@ class DayStatistics extends StatefulWidget {
 class _DayStatisticsState extends State<DayStatistics> {
   TextEditingController hourController = TextEditingController();
   TextEditingController minuteController = TextEditingController();
-  Text ost = const Text("Осталось:          2:30",
-      style: TextStyle(fontSize: 20, color: Colors.red));
-  Text per = const Text("Переработка:   2:30",
-      style: TextStyle(fontSize: 20, color: Colors.green));
   bool isOst = true;
   bool isStateEdit = false;
   Color boxesColor = Colors.black;
 
   @override
   Widget build(BuildContext context) {
-    Text text = isOst ? ost : per;
+    Provider.of<CurrentDayProvider>(context);
+    hourController.text = widget._currentDayInfo.amountTime.hourToString();
+    minuteController.text = widget._currentDayInfo.amountTime.minuteToString();
+
+    Text divText;
+    double allWorkLen = DayStatistics._barMinuteLength * widget._currentDayInfo.amountTime.hour * 60 + widget._currentDayInfo.amountTime.minute;
+    double workLineLen, leftLineLen, overLineLen;
+    TimeOfDay div = widget._currentDayInfo.amountTime.subtract(widget._currentDayInfo.workTime);
+    if (div < const TimeOfDay(hour: 0, minute: 0)) {
+      divText = Text("Переработка:    ${div.hourToString()}:${div.minuteToString()}",
+          style: const TextStyle(fontSize: 20, color: Colors.green));
+    } else {
+      divText = Text("Осталось:            ${div.hourToString()}:${div.minuteToString()}",
+          style: const TextStyle(fontSize: 20, color: Colors.red));
+    }
+
+    if (div == const TimeOfDay(hour: 0, minute: 0)) {
+      workLineLen = allWorkLen;
+      leftLineLen = 0;
+      overLineLen = 0;
+    } else if (div > const TimeOfDay(hour: 0, minute: 0)) {
+      print("${div.toString()} > ${const TimeOfDay(hour: 0, minute: 0)}");
+      workLineLen = allWorkLen * (widget._currentDayInfo.workTime / widget._currentDayInfo.amountTime);
+      leftLineLen = allWorkLen - workLineLen;
+      overLineLen = 0;
+    } else {
+      print("${div.toString()} < ${const TimeOfDay(hour: 0, minute: 0)}");
+      workLineLen = allWorkLen;
+      overLineLen = ((widget._currentDayInfo.workTime / widget._currentDayInfo.amountTime) - 1) * allWorkLen;
+      if (workLineLen + overLineLen > DayStatistics._barMaxLength) {
+        overLineLen = DayStatistics._barMaxLength - workLineLen;
+      }
+      leftLineLen = 0;
+    }
+
     Row allRow = !isStateEdit
         ? Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Всего:                8:45",
-                  style: TextStyle(fontSize: 20)),
+              Text("Всего:                   ${widget._currentDayInfo.amountTime.hourToString()}:${widget._currentDayInfo.amountTime.minuteToString()}",
+                  style: const TextStyle(fontSize: 20)),
               Container(
                   padding: const EdgeInsets.only(right: 10),
                   child: IconButton(
@@ -114,28 +151,23 @@ class _DayStatisticsState extends State<DayStatistics> {
                 HorizontalBar(
                   height: 30,
                   components: [
-                    HorizontalBarComponent(200, Colors.blue),
-                    HorizontalBarComponent(70, Colors.red.withOpacity(0.3)),
-                    HorizontalBarComponent(70, Colors.green.withOpacity(0.3))
+                    HorizontalBarComponent(workLineLen, Colors.blue),
+                    HorizontalBarComponent(leftLineLen, Colors.red.withOpacity(0.3)),
+                    HorizontalBarComponent(overLineLen, Colors.green.withOpacity(0.3))
                   ],
                 ),
                 const Padding(padding: EdgeInsets.only(top: 3)),
-                const Align(
+                Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("Прошло:           5:30",
-                        style: TextStyle(fontSize: 20, color: Colors.blue))),
+                    child: Text("Прошло:              ${widget._currentDayInfo.workTime.hourToString()}:${widget._currentDayInfo.workTime.minuteToString()}",
+                        style: const TextStyle(fontSize: 20, color: Colors.blue))),
                 const Padding(padding: EdgeInsets.only(top: 3)),
                 Align(
                     alignment: Alignment.centerLeft,
                     child: Row(
                       children: [
-                        text,
+                        divText,
                         const Padding(padding: EdgeInsets.only(left: 25)),
-                        TextButton(
-                            onPressed: () => setState(() {
-                                  isOst = !isOst;
-                                }),
-                            child: const Text(""))
                       ],
                     )),
                 const Padding(padding: EdgeInsets.only(top: 3)),

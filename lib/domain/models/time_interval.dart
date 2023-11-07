@@ -24,18 +24,24 @@ class TimeInterval {
       for (var skip in skips) {
         // Если интервал начинается за концом текущего,
         // или заканчивается за его началом - пропускаем его
+        // print("Skip is ${skip.start.hour}:${skip.start.minute} - ${skip.end.hour}-${skip.end.minute}");
+
         if (skip.start >= end || skip.end < start) {
+          // print("Skip not fit");
           continue;
         }
 
         // Если пропускаемый интервал заканчивается после текущего
         if (skip.end > end) {
+          // print("skip.end > end, minus ${TimeInterval(skip.start, end).interval().toString()}");
           result.subtract(TimeInterval(skip.start, end).interval());
         // Если пропускаемый интервал начинается до текущего
         } else if (skip.start < start) {
+          // print("skip.start < start, minus ${TimeInterval(start, skip.end).interval().toString()}");
           result.subtract(TimeInterval(start, skip.end).interval());
         // Если пропускаемый интервал полностью попадает в текущий
         } else {
+          // print("minus full ${skip.interval().toString()}");
           result.subtract(skip.interval());
         }
       }

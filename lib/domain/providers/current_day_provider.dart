@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:work_time_manager/domain/dependencies/i_day_info_service.dart';
@@ -7,15 +9,29 @@ import 'package:work_time_manager/domain/external/i_current_day_provider.dart';
 import 'package:work_time_manager/domain/models/current_day_info.dart';
 import 'package:work_time_manager/domain/models/day_info.dart';
 import 'package:work_time_manager/domain/models/month_statistics.dart';
+import 'package:work_time_manager/domain/models/time_interval.dart';
 
-class CurrentDayProvider implements ICurrentDayProvider {
+class CurrentDayProvider with ChangeNotifier implements ICurrentDayProvider {
   final IDayInfoService _dayInfoService;
   final IMonthInfoService _monthInfoService;
   final TimeOfDay _amountTime;
   CurrentDayInfo? _currentDay;
+  Timer? _timer;
 
+  CurrentDayProvider(
+      this._dayInfoService, this._monthInfoService, this._amountTime);
 
-  CurrentDayProvider(this._dayInfoService, this._monthInfoService, this._amountTime);
+  void init() {
+    _timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
+      await saveCurrentDay();
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _timer?.cancel();
+  }
 
   @override
   Future<CurrentDayInfo> getCurrentDay() async {
@@ -25,26 +41,32 @@ class CurrentDayProvider implements ICurrentDayProvider {
         if (dayInfo == null) {
           _currentDay = CurrentDayInfo(
               arriveTime: DateTime.now(), amountTime: _amountTime);
+          _currentDay!.skips.add(TimeInterval(
+              const TimeOfDay(hour: 12, minute: 45),
+              const TimeOfDay(hour: 13, minute: 30)));
         } else {
           DateTime now = DateTime.now();
           if (dayInfo.arriveTime.sameDate(now)) {
             _currentDay = dayInfo.toCurrentDayInfo();
           } else {
-            MonthStatistics? month = await _monthInfoService.getMonth(dayInfo.arriveTime.year, dayInfo.arriveTime.month);
+            MonthStatistics? month = await _monthInfoService.getMonth(
+                dayInfo.arriveTime.year, dayInfo.arriveTime.month);
             if (month == null) {
-              month = MonthStatistics(year: dayInfo.arriveTime.year, month: dayInfo.arriveTime.month, statistics: [
-                dayInfo
-              ]);
+              month = MonthStatistics(
+                  year: dayInfo.arriveTime.year,
+                  month: dayInfo.arriveTime.month,
+                  statistics: [dayInfo]);
             } else {
               month.statistics.add(dayInfo);
             }
 
             await _monthInfoService.saveMonth(month);
 
-            _currentDay = CurrentDayInfo(arriveTime: now, amountTime: _amountTime);
+            _currentDay =
+                CurrentDayInfo(arriveTime: now, amountTime: _amountTime);
           }
         }
-      } catch(_) {
+      } catch (_) {
         _currentDay = _currentDay;
       }
     }
@@ -56,10 +78,11 @@ class CurrentDayProvider implements ICurrentDayProvider {
   Future<bool> saveCurrentDay() async {
     if (_currentDay != null) {
       var lock = Lock();
-      lock.synchronized(() => {
-
+      return await lock.synchronized<bool>(() async {
+        bool res = await _dayInfoService.saveCurrentDay(_currentDay!.toDayInfo());
+        notifyListeners();
+        return res;
       });
-      return await _dayInfoService.saveCurrentDay(_currentDay!.toDayInfo());
     }
 
     return false;
