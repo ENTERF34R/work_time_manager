@@ -1,21 +1,31 @@
 import 'package:flutter/material.dart';
 
 extension TimeOfDayExtensions on TimeOfDay {
-  /*
-  TimeOfDay add(TimeOfDay time) {
-    int hour = this.hour + time.hour;
-    int minute = this.minute + time.minute;
+  // Часы в строковом представлении в формате HH
+  String hourToString() {
+    int h = hour.abs();
 
-    if (minute >= 60) {
-      hour++;
-      minute -= 60;
+    if (h < 10) {
+      return "0$h";
+    } else {
+      return h.toString();
     }
-
-    return TimeOfDay(hour: hour, minute: minute);
   }
-   */
 
-  TimeOfDay add(TimeOfDay other) {
+  // Минуты в строковом представлении в формате MM
+  String minuteToString() {
+    int m = minute.abs();
+
+    if (m < 10) {
+      return "0$m";
+    } else {
+      return m.toString();
+    }
+  }
+
+  double toDouble() => hour + minute / 60;
+
+  TimeOfDay operator +(TimeOfDay other) {
     int hour, minute;
 
     bool isThisNeg = (this.hour < 0 || this.minute < 0);
@@ -46,7 +56,7 @@ extension TimeOfDayExtensions on TimeOfDay {
     }
   }
 
-  TimeOfDay subtract(TimeOfDay other) {
+  TimeOfDay operator -(TimeOfDay other) {
     int hour, minute;
 
     if (this > other) {
@@ -125,27 +135,5 @@ extension TimeOfDayExtensions on TimeOfDay {
     double otherAmount = other.hour.toDouble() * 60 + other.minute.toDouble();
 
     return thisAmount / otherAmount;
-  }
-
-  double toDouble() => hour + minute / 60;
-
-  String hourToString() {
-    int h = hour.abs();
-
-    if (h < 10) {
-      return "0$h";
-    } else {
-      return h.toString();
-    }
-  }
-
-  String minuteToString() {
-    int m = minute.abs();
-
-    if (m < 10) {
-      return "0$m";
-    } else {
-      return m.toString();
-    }
   }
 }

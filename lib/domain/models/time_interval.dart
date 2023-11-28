@@ -11,14 +11,14 @@ class TimeInterval {
   TimeOfDay end;
 
   TimeInterval(this.start, this.end) {
-    TimeOfDay diff = end.subtract(start);
+    TimeOfDay diff = end - start;
     if (diff.hour < 0) {
       throw Exception("End can't be before start");
     }
   }
 
   TimeOfDay interval({List<TimeInterval>? skips}) {
-    TimeOfDay result = end.subtract(start);
+    TimeOfDay result = end - start;
 
     if (skips != null) {
       for (var skip in skips) {
@@ -34,15 +34,15 @@ class TimeInterval {
         // Если пропускаемый интервал заканчивается после текущего
         if (skip.end > end) {
           // print("skip.end > end, minus ${TimeInterval(skip.start, end).interval().toString()}");
-          result.subtract(TimeInterval(skip.start, end).interval());
+          result - TimeInterval(skip.start, end).interval();
         // Если пропускаемый интервал начинается до текущего
         } else if (skip.start < start) {
           // print("skip.start < start, minus ${TimeInterval(start, skip.end).interval().toString()}");
-          result.subtract(TimeInterval(start, skip.end).interval());
+          result - TimeInterval(start, skip.end).interval();
         // Если пропускаемый интервал полностью попадает в текущий
         } else {
           // print("minus full ${skip.interval().toString()}");
-          result.subtract(skip.interval());
+          result - skip.interval();
         }
       }
     }

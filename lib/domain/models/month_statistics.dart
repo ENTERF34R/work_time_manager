@@ -17,8 +17,8 @@ class MonthStatistics {
     TimeOfDay result = const TimeOfDay(hour: 0, minute: 0);
 
     for (var day in monthStatistics.statistics) {
-      TimeOfDay div = day.workTime.subtract(day.amountTime);
-      result = result.add(div);
+      TimeOfDay div = day.workTime - day.amountTime;
+      result = result + div;
     }
 
     return result;

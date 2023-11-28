@@ -5,8 +5,9 @@ import 'package:work_time_manager/domain/dependencies/i_month_info_service.dart'
 import 'package:work_time_manager/domain/models/month_statistics.dart';
 import 'package:path_provider/path_provider.dart' as path;
 
-import '../domain/models/day_info.dart';
-
+/*
+  Реализация интерфейса IMonthInfoService на основе локального кэша
+*/
 class MonthInfoService implements IMonthInfoService {
   @override
   Future<MonthStatistics?> getMonth(int year, int month) async {

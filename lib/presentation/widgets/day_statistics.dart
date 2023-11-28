@@ -38,7 +38,7 @@ class _DayStatisticsState extends State<DayStatistics> {
     Text divText;
     double allWorkLen = DayStatistics._barMinuteLength * widget._currentDayInfo.amountTime.hour * 60 + widget._currentDayInfo.amountTime.minute;
     double workLineLen, leftLineLen, overLineLen;
-    TimeOfDay div = widget._currentDayInfo.amountTime.subtract(widget._currentDayInfo.workTime);
+    TimeOfDay div = widget._currentDayInfo.amountTime - widget._currentDayInfo.workTime;
     if (div < const TimeOfDay(hour: 0, minute: 0)) {
       divText = Text("Переработка:      ${div.hourToString()}:${div.minuteToString()}",
           style: const TextStyle(fontSize: 20, color: Colors.green));

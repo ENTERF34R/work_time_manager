@@ -4,6 +4,9 @@ import 'package:work_time_manager/domain/dependencies/i_day_info_service.dart';
 import 'package:work_time_manager/domain/models/day_info.dart';
 import 'package:path_provider/path_provider.dart' as path;
 
+/*
+  Реализация интерфейса IDayInfoService на основе локального кэша
+*/
 class DayInfoService implements IDayInfoService {
   @override
   Future<DayInfo?> getCurrentDay() async {
