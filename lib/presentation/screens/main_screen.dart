@@ -4,8 +4,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:work_time_manager/domain/extensions/date_time_extensions.dart';
+import 'package:work_time_manager/domain/external/i_app_settings_provider.dart';
+import 'package:work_time_manager/domain/external/i_current_day_provider.dart';
+import 'package:work_time_manager/domain/models/app_settings.dart';
 import 'package:work_time_manager/domain/models/current_day_info.dart';
-import 'package:work_time_manager/domain/providers/current_day_provider.dart';
+import 'package:work_time_manager/presentation/widgets/app_settings_widget.dart';
 import 'package:work_time_manager/presentation/widgets/day_note.dart';
 import 'package:work_time_manager/presentation/widgets/day_statistics.dart';
 import 'package:work_time_manager/presentation/widgets/item_container.dart';
@@ -30,9 +33,12 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    CurrentDayProvider currentDayProvider =
-        Provider.of<CurrentDayProvider>(context, listen: false);
+    ICurrentDayProvider currentDayProvider =
+        Provider.of<ICurrentDayProvider>(context, listen: false);
+    IAppSettingsProvider appSettingsProvider =
+        Provider.of<IAppSettingsProvider>(context, listen: false);
 
+    /*
     String tab2Text = "";
     Random rand = Random();
     switch (rand.nextInt(3)) {
@@ -47,11 +53,11 @@ class _MainScreenState extends State<MainScreen> {
             "Заходит как то пользователь во вторую вкладку, а там армяне в нарды играют";
         break;
     }
+    */
 
     return FutureBuilder(
         future: () async {
-          currentDayProvider.init();
-          return currentDayProvider.getCurrentDay();
+          return MainScreenData(await currentDayProvider.getCurrentDay(await appSettingsProvider.getAppSettings()), await appSettingsProvider.getAppSettings());
         }(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
@@ -61,7 +67,7 @@ class _MainScreenState extends State<MainScreen> {
                   style: const TextStyle(fontSize: 30, color: Colors.red)),
             );
           } else if (snapshot.hasData) {
-            currentDay = snapshot.data!;
+            currentDay = snapshot.data!.currentDay;
             return DefaultTabController(
                 length: 3,
                 child: Scaffold(
@@ -110,17 +116,7 @@ class _MainScreenState extends State<MainScreen> {
                                     SizedBox(
                                       width: 370,
                                       height: 200,
-                                      child: ItemContainer(
-                                          child: Container(
-                                              padding: const EdgeInsets.all(15),
-                                              child: FittedBox(
-                                                  fit: BoxFit.fill,
-                                                  child: IconButton(
-                                                      onPressed: () => print(
-                                                          MediaQuery.of(context)
-                                                              .size),
-                                                      icon: Image.file(File(
-                                                          "C:/Users/Ayaya/Downloads/naruto.jpg")))))),
+                                      child: AppSettingsWidget(appSettings: snapshot.data!.appSettings),
                                     )
                                   ],
                                 ),
@@ -175,7 +171,8 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                       Align(
                         alignment: Alignment.center,
-                        child: Text(tab2Text),
+                        //child: Text(tab2Text),
+                        child: AppSettingsWidget(appSettings: snapshot.data!.appSettings),
                       )
                     ],
                   ),
@@ -193,7 +190,7 @@ class _MainScreenState extends State<MainScreen> {
         });
   }
 
-  Future saveCurrentDay(CurrentDayProvider provider) async {
+  Future saveCurrentDay(ICurrentDayProvider provider) async {
     saveNotifier.value = true;
     provider.saveCurrentDay();
     saveNotifier.value = false;
@@ -239,4 +236,11 @@ class _MainScreenState extends State<MainScreen> {
       const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
     ];
   }
+}
+
+class MainScreenData {
+  CurrentDayInfo currentDay;
+  AppSettings appSettings;
+
+  MainScreenData(this.currentDay, this.appSettings);
 }

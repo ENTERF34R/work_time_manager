@@ -13,6 +13,9 @@ DayInfo _$DayInfoFromJson(Map<String, dynamic> json) => DayInfo(
       const TimeOfDayJsonConverter()
           .fromJson(json['workTime'] as Map<String, dynamic>),
       json['note'] as String,
+      (json['skips'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, TimeInterval.fromJson(e as Map<String, dynamic>)),
+      ),
     );
 
 Map<String, dynamic> _$DayInfoToJson(DayInfo instance) => <String, dynamic>{
@@ -20,4 +23,5 @@ Map<String, dynamic> _$DayInfoToJson(DayInfo instance) => <String, dynamic>{
       'amountTime': const TimeOfDayJsonConverter().toJson(instance.amountTime),
       'workTime': const TimeOfDayJsonConverter().toJson(instance.workTime),
       'note': instance.note,
+      'skips': instance.skips,
     };

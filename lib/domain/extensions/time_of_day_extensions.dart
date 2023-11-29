@@ -25,6 +25,8 @@ extension TimeOfDayExtensions on TimeOfDay {
 
   double toDouble() => hour + minute / 60;
 
+  int toInt() => hour * 60 + minute;
+
   TimeOfDay operator +(TimeOfDay other) {
     int hour, minute;
 

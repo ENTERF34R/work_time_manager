@@ -59,10 +59,12 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
           if (divText == null) {
             TimeOfDay divTime = MonthStatistics.getDiv(value.data!);
             if (divTime < const TimeOfDay(hour: 0, minute: 0)) {
-              divText = Text("Недоработка:   ${divTime.hourToString()}:${divTime.minuteToString()}",
+              divText = Text(
+                  "Недоработка:   ${divTime.hourToString()}:${divTime.minuteToString()}",
                   style: const TextStyle(fontSize: 20, color: Colors.red));
             } else {
-              divText = Text("Переработка:  ${divTime.hourToString()}:${divTime.minuteToString()}",
+              divText = Text(
+                  "Переработка:  ${divTime.hourToString()}:${divTime.minuteToString()}",
                   style: const TextStyle(fontSize: 20, color: Colors.green));
             }
           }
@@ -79,9 +81,10 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
                         style:
                             TextStyle(fontSize: 20, color: Colors.blueAccent)),
                     const Padding(padding: EdgeInsets.only(top: 5)),
-                    Text("${rusMonthName(value.data!.month)} ${value.data!.year}",
-                        style:
-                        const TextStyle(fontSize: 20, color: Colors.blueAccent)),
+                    Text(
+                        "${rusMonthName(value.data!.month)} ${value.data!.year}",
+                        style: const TextStyle(
+                            fontSize: 20, color: Colors.blueAccent)),
                     const Padding(padding: EdgeInsets.symmetric(vertical: 5)),
                     Align(
                         alignment: Alignment.topCenter,
@@ -105,8 +108,8 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
         });
   }
 
-  Widget getHistogram(MonthStatistics monthStatistics, List<BarChartGroupData> groups) {
-
+  Widget getHistogram(
+      MonthStatistics monthStatistics, List<BarChartGroupData> groups) {
     return SizedBox(
         width: 750,
         height: 225,
@@ -117,15 +120,25 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
                 child: BarChart(BarChartData(
                     maxY: 12,
                     groupsSpace: 5,
-                    titlesData: FlTitlesData(bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) => bottomTitles(monthStatistics, value, meta),
-                      )
-                    ), rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false))),
+                    titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (value, meta) =>
+                              bottomTitles(monthStatistics, value, meta),
+                        )),
+                        rightTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)),
+                        topTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false))),
                     barTouchData: BarTouchData(
                         touchCallback: (event, response) {
+                          if (response != null &&
+                              response.spot != null &&
+                              event is FlTapUpEvent) {
+                            _onDayClick();
+                          }
+
                           if (response != null &&
                               response.spot != null &&
                               event is FlPointerHoverEvent) {
@@ -143,7 +156,7 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
                             }
 
                             setState(() {
-                                workTimeLabel =
+                              workTimeLabel =
                                   "${dayData.workTime.hourToString()}:${dayData.workTime.minuteToString()}";
 
                               if (dayData.workTime < dayData.amountTime) {
@@ -192,8 +205,7 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
               BarChartRodStackItem(0, day.workTime.toDouble(), Colors.blue));
         }
 
-        result.add(BarChartGroupData(x: currentDay,
-            barRods: [
+        result.add(BarChartGroupData(x: currentDay, barRods: [
           BarChartRodData(
               toY: 10, color: Colors.transparent, rodStackItems: items)
         ]));
@@ -205,8 +217,19 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
     return result;
   }
 
-  Widget bottomTitles(MonthStatistics monthStatistics, double value, TitleMeta meta) {
-    DateTime day = DateTime(monthStatistics.year, monthStatistics.month, value.toInt());
+  void _onDayClick() {
+    context;
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(content: Text("Hello"));
+        });
+  }
+
+  Widget bottomTitles(
+      MonthStatistics monthStatistics, double value, TitleMeta meta) {
+    DateTime day =
+        DateTime(monthStatistics.year, monthStatistics.month, value.toInt());
     String dayOfTheWeek = DateFormat('EEEE').format(day);
     TextStyle style = const TextStyle(fontSize: 12);
 
@@ -218,7 +241,7 @@ class _MonthStatisticsWidgetState extends State<MonthStatisticsWidget> {
   }
 
   String rusMonthName(int month) {
-    switch(month) {
+    switch (month) {
       case 1:
         return "Январь";
       case 2:

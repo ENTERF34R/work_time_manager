@@ -5,7 +5,7 @@ import 'package:work_time_manager/domain/extensions/time_of_day_extensions.dart'
 
 part 'time_interval.g.dart';
 
-@JsonSerializable(converters: [ TimeOfDayJsonConverter() ])
+@JsonSerializable(converters: [TimeOfDayJsonConverter()])
 class TimeInterval {
   TimeOfDay start;
   TimeOfDay end;
@@ -17,44 +17,88 @@ class TimeInterval {
     }
   }
 
-  TimeOfDay interval({List<TimeInterval>? skips}) {
-    TimeOfDay result = end - start;
-
-    if (skips != null) {
-      for (var skip in skips) {
-        // Если интервал начинается за концом текущего,
-        // или заканчивается за его началом - пропускаем его
-        // print("Skip is ${skip.start.hour}:${skip.start.minute} - ${skip.end.hour}-${skip.end.minute}");
-
-        if (skip.start >= end || skip.end < start) {
-          // print("Skip not fit");
-          continue;
-        }
-
-        // Если пропускаемый интервал заканчивается после текущего
-        if (skip.end > end) {
-          // print("skip.end > end, minus ${TimeInterval(skip.start, end).interval().toString()}");
-          result - TimeInterval(skip.start, end).interval();
-        // Если пропускаемый интервал начинается до текущего
-        } else if (skip.start < start) {
-          // print("skip.start < start, minus ${TimeInterval(start, skip.end).interval().toString()}");
-          result - TimeInterval(start, skip.end).interval();
-        // Если пропускаемый интервал полностью попадает в текущий
-        } else {
-          // print("minus full ${skip.interval().toString()}");
-          result - skip.interval();
-        }
-      }
-    }
-
-    if (result.hour < 0) {
-      result = const TimeOfDay(hour: 0, minute: 0);
-    }
-
-    return result;
+  TimeOfDay toTimeOfDay() {
+    return end - start;
   }
 
-  factory TimeInterval.fromJson(Map<String, dynamic> json) => _$TimeIntervalFromJson(json);
+  /*
+    1) Сортируем массив интервалов
+    2) x = первый интервал
+    3) Если интервал x последний - переходим к п. 8:
+    4) Проверяем пересекаются ли интервал x и следующий интервал
+    5) Если пересекаются - объединяем их и x = итоговый интервал
+    6) Если не пересекаются - x = следующий за x интервал
+    7) Возвращаемся в п. 3
+    8) Теперь все интервалы - непересекающиеся
+    9) Обрезаем или удаляем интервалы, не попадающие в основной
+    10) Считаем суммы интервалов
+    11) Переводим основной интервал в TimeOfDay
+    12) Вычитаем сумму интервалов из основного
+  */
+  TimeOfDay remove({List<TimeInterval>? intervals}) {
+    if (intervals != null && intervals.isNotEmpty) {
+      List<TimeInterval> i = List<TimeInterval>.from(intervals);
+      i.sort((a, b) => (a.start.toInt().compareTo(b.start.toInt())));
+      int counter = 0;
+      TimeInterval? interv;
+      while (counter < i.length - 1) {
+        interv = TimeInterval._combine(i[counter], i[counter + 1]);
+        if (interv != null) {
+          i.removeRange(counter, counter + 2);
+          i.insert(0, interv);
+        } else {
+          counter++;
+        }
+      }
+      counter = 0;
+      while (counter < i.length) {
+        if (i[counter].end <= start) {
+          i.removeAt(counter);
+          continue;
+        } else if (i[counter].start < start) {
+          i[counter].start = start;
+        } else if (i[counter].start >= end) {
+          i.removeAt(counter);
+          continue;
+        } else if (i[counter].end > end) {
+          i[counter].end = end;
+        }
+
+        counter++;
+      }
+
+      TimeOfDay skip = const TimeOfDay(hour: 0, minute: 0);
+      for (var element in i) {
+        skip += element.toTimeOfDay();
+      }
+
+      return toTimeOfDay() - skip;
+    } else {
+      return toTimeOfDay();
+    }
+  }
+
+  static TimeInterval? _combine(TimeInterval a, TimeInterval b) {
+    if (a.end >= b.start && a.end < b.end) {
+      return TimeInterval(a.start, b.end);
+    } else if (b.end >= a.start && b.end < a.end) {
+      return TimeInterval(b.start, a.end);
+    } else if (a.start <= b.start && a.end >= b.end) {
+      return a;
+    } else if (b.start <= a.start && b.end >= b.end) {
+      return b;
+    } else {
+      return null;
+    }
+  }
+
+  @override
+  String toString() {
+    return ("${start.hour}:${start.minute} - ${end.hour}:${end.minute}");
+  }
+
+  factory TimeInterval.fromJson(Map<String, dynamic> json) =>
+      _$TimeIntervalFromJson(json);
 
   Map<String, dynamic> toJson() => _$TimeIntervalToJson(this);
 }

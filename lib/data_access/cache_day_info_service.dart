@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart' as path;
 /*
   Реализация интерфейса IDayInfoService на основе локального кэша
 */
-class DayInfoService implements IDayInfoService {
+class CacheDayInfoService implements IDayInfoService {
   @override
   Future<DayInfo?> getCurrentDay() async {
     Directory dir = await path.getApplicationCacheDirectory();

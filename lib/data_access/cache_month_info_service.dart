@@ -8,7 +8,7 @@ import 'package:path_provider/path_provider.dart' as path;
 /*
   Реализация интерфейса IMonthInfoService на основе локального кэша
 */
-class MonthInfoService implements IMonthInfoService {
+class CacheMonthInfoService implements IMonthInfoService {
   @override
   Future<MonthStatistics?> getMonth(int year, int month) async {
     Directory dir = await path.getApplicationCacheDirectory();

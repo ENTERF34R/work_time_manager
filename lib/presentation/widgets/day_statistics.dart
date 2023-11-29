@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:work_time_manager/domain/extensions/time_of_day_extensions.dart';
+import 'package:work_time_manager/domain/external/i_current_day_provider.dart';
 import 'package:work_time_manager/domain/models/current_day_info.dart';
-import 'package:work_time_manager/domain/providers/current_day_provider.dart';
 import 'package:work_time_manager/presentation/widgets/horizontal_bar.dart';
 import 'package:work_time_manager/presentation/widgets/item_container.dart';
 
@@ -31,7 +31,7 @@ class _DayStatisticsState extends State<DayStatistics> {
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<CurrentDayProvider>(context);
+    Provider.of<ICurrentDayProvider>(context);
     hourController.text = widget._currentDayInfo.amountTime.hourToString();
     minuteController.text = widget._currentDayInfo.amountTime.minuteToString();
 
